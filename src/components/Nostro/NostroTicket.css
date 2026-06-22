@@ -1,0 +1,96 @@
+/* ================================================
+   NOSTROTICKET — Nostro Transfer (NTRM) Specific Layout
+   ================================================ */
+
+/* Top block splitting grid and references */
+.ntrm-top-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-lg);
+}
+
+.ntrm-grid-left {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.85rem var(--space-md);
+  align-items: center;
+}
+
+.ntrm-grid-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  justify-content: space-between;
+}
+
+.input-group-placeholder {
+  height: 100%;
+}
+
+.span-two {
+  grid-column: span 2;
+}
+
+/* Nostro Parameters Section */
+.nostro-parameters-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.nostro-params-row-1 {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 1.5fr;
+  gap: var(--space-md);
+}
+
+.nostro-params-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 1.5fr;
+  gap: var(--space-md);
+}
+
+.nostro-params-row-2 .sub-input {
+  grid-column: 2; /* Forces "To Account" to align directly below "From Account" */
+}
+
+/* Comments Grid */
+.nostro-comments-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--space-lg);
+}
+
+/* Responsive Layout adjustments */
+@media (max-width: 1600px) {
+  .ntrm-top-layout {
+    grid-template-columns: 1fr;
+  }
+  .nostro-params-row-1 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .nostro-params-row-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .nostro-params-row-2 .sub-input {
+    grid-column: span 2;
+  }
+  .nostro-comments-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .ntrm-grid-left {
+    grid-template-columns: 1fr;
+  }
+  .nostro-params-row-1 {
+    grid-template-columns: 1fr;
+  }
+  .nostro-params-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .nostro-params-row-2 .sub-input {
+    grid-column: span 1;
+  }
+}

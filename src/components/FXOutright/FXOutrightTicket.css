@@ -1,0 +1,225 @@
+/* ================================================
+   FXOUTRIGHT — Ticket Specific Layout & Styling
+   ================================================ */
+
+.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.actions-left,
+.actions-right {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.85rem;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  border-color: var(--color-text-secondary);
+}
+
+.act-icon {
+  color: var(--color-text-muted);
+}
+
+.act-icon.success {
+  color: var(--color-success);
+}
+
+.act-icon.primary {
+  color: var(--color-primary-light);
+}
+
+.act-icon.warning {
+  color: #ffb300;
+}
+
+.act-icon.bearish {
+  color: var(--color-accent);
+}
+
+/* FX Top Identification Grid Split */
+.fx-top-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-lg);
+}
+
+.fx-grid-left {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem var(--space-md);
+}
+
+.fx-grid-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  justify-content: space-between;
+}
+
+.textarea-ref-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.textarea-ref-group label {
+  font-size: var(--fs-small);
+  color: var(--color-text-secondary);
+}
+
+.textarea-ref-group textarea {
+  width: 100%;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  padding: 0.5rem;
+  font-size: var(--fs-small);
+  resize: none;
+}
+
+.radio-group-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.radio-group-container label {
+  font-size: var(--fs-small);
+  color: var(--color-text-secondary);
+}
+
+.radios-horizontal {
+  display: flex;
+  gap: var(--space-md);
+}
+
+/* Leg Details Grid */
+.fx-legs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: var(--space-md);
+}
+
+.fx-side-panel {
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.fx-side-panel--sell {
+  border-left: 3px solid var(--color-accent);
+}
+
+.fx-side-panel--buy {
+  border-left: 3px solid var(--color-success);
+}
+
+.fx-side-inputs {
+  display: grid;
+  grid-template-columns: 60px 1fr 1.1fr;
+  gap: var(--space-xs);
+}
+
+.fx-side-params {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.params-row {
+  display: grid;
+  grid-template-columns: 1fr 80px;
+  gap: var(--space-xs);
+}
+
+.checkboxes-vertical-fx {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Comments layout */
+.fx-comments-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--space-lg);
+}
+
+.comment-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.input-group-row {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.half-width {
+  flex: 1;
+}
+
+.half-width label {
+  width: 75px !important;
+}
+
+.support-link-container-fx {
+  text-align: right;
+  padding: var(--space-sm) var(--space-md);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1600px) {
+  .fx-top-layout {
+    grid-template-columns: 1fr;
+  }
+  .fx-legs-container {
+    grid-template-columns: 1fr 1fr;
+  }
+  .fx-side-params {
+    grid-column: span 2;
+  }
+  .fx-comments-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .fx-legs-container {
+    grid-template-columns: 1fr;
+  }
+  .fx-side-params {
+    grid-column: span 1;
+  }
+}

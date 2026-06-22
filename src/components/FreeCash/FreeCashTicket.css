@@ -1,0 +1,130 @@
+/* ================================================
+   FREECASHTICKET — Free Cash Specific Layout & Styles
+   ================================================ */
+
+/* Top block layout */
+.fc-top-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-lg);
+}
+
+.fc-grid-left {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.85rem var(--space-md);
+  align-items: center;
+}
+
+.fc-grid-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  justify-content: space-between;
+}
+
+.input-group-placeholder {
+  height: 100%;
+}
+
+.span-two {
+  grid-column: span 2;
+}
+
+/* Parameters Block Layout */
+.fc-parameters-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.fc-params-row {
+  display: grid;
+  grid-template-columns: 90px 1.5fr 0.8fr 1.5fr 1.5fr;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+/* Stacked Pay / Receive direction button container */
+.direction-toggle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dir-toggle-btn {
+  padding: 0.35rem;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-align: center;
+}
+
+/* Hover effects */
+.dir-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-white);
+  border-color: var(--color-text-secondary);
+}
+
+/* Pay active state: wine-red / burgundy glow */
+.dir-toggle-btn--pay.active {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+  border-color: var(--color-primary-light);
+  color: var(--color-white);
+  box-shadow: 0 0 10px var(--color-primary-glow);
+}
+
+/* Receive active state: emerald green / success glow */
+.dir-toggle-btn--receive.active {
+  background: linear-gradient(135deg, #00e676 0%, #00b0ff 100%);
+  border-color: #00e676;
+  color: #080808;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+}
+
+/* Comments layout */
+.fc-comments-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--space-lg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1600px) {
+  .fc-top-layout {
+    grid-template-columns: 1fr;
+  }
+  .fc-params-row {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+  .direction-toggle-container {
+    flex-direction: row;
+    grid-column: span 2;
+  }
+  .direction-toggle-container .dir-toggle-btn {
+    flex: 1;
+  }
+  .fc-comments-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .fc-grid-left {
+    grid-template-columns: 1fr;
+  }
+  .fc-params-row {
+    grid-template-columns: 1fr;
+  }
+  .direction-toggle-container {
+    grid-column: span 1;
+  }
+}
