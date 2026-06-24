@@ -72,7 +72,7 @@ const Sidebar = ({ activeTab, setActiveTab, activeEnv, setActiveEnv, addToast })
   return (
     <aside className="sidebar glass">
       {/* Brand Header */}
-      <div className="sidebar__brand" onClick={() => setActiveTab('mm')} style={{ cursor: 'pointer' }} title="Go to home (MM Ticket)">
+      <div className="sidebar__brand" onClick={() => setActiveTab('my-trades')} style={{ cursor: 'pointer' }} title="Go to home (MM Ticket)">
         <div className="sidebar__brand-logo">
           <Wallet size={20} className="brand-logo-icon" />
         </div>
@@ -119,7 +119,6 @@ const Sidebar = ({ activeTab, setActiveTab, activeEnv, setActiveEnv, addToast })
           >
             <Sparkles size={16} className="sidebar__icon" />
             <span className="sidebar__label">My Trades</span>
-            <span className="sidebar__badge">NEW</span>
           </button>
         </div>
 

@@ -1,8 +1,6 @@
-import { useEffect, useState, useLayoutEffect } from 'react';
-import gsap from 'gsap';
+import { useState, useLayoutEffect } from 'react';
 
 /* Core components */
-import Preloader from './components/Preloader/Preloader';
 import Background from './components/Background/Background';
 import Sidebar from './components/Sidebar/Sidebar';
 import MMTicket from './components/MM/MMTicket';
@@ -18,8 +16,7 @@ import MyTrades from './components/MyTrades/MyTrades';
 import './App.css';
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('mm');
+  const [activeTab, setActiveTab] = useState('my-trades');
   const [activeSubTab, setActiveSubTab] = useState('home');
 
   // Hoisted global configuration toggles
@@ -42,18 +39,6 @@ function App() {
     window.dispatchEvent(event);
   };
 
-  /* Lock scroll during preloader loading state */
-  useEffect(() => {
-    if (isLoading) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isLoading]);
-
   /* Disable browser automatic scroll restoration and force scroll to top on mount */
   useLayoutEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -61,15 +46,6 @@ function App() {
     }
     window.scrollTo(0, 0);
   }, []);
-
-  const handlePreloaderTransitionStart = () => {
-    window.scrollTo(0, 0);
-  };
-
-  const handlePreloaderComplete = () => {
-    setIsLoading(false);
-    window.scrollTo(0, 0);
-  };
 
   const addToast = (message, type = 'success') => {
     const id = Date.now();
@@ -218,14 +194,6 @@ function App() {
       {/* Animated background */}
       <Background />
 
-      {/* Preloader */}
-      {isLoading && (
-        <Preloader
-          onComplete={handlePreloaderComplete}
-          onTransitionStart={handlePreloaderTransitionStart}
-        />
-      )}
-
       {/* Toast Notifications */}
       <div className="toasts-container">
         {toasts.map((t) => (
@@ -239,8 +207,7 @@ function App() {
       </div>
 
       {/* Main Content Layout */}
-      {!isLoading && (
-        <main className="app__main">
+      <main className="app__main">
           {/* Left Sidebar */}
           <Sidebar 
             activeTab={activeTab} 
@@ -330,7 +297,6 @@ function App() {
             </footer>
           </div>
         </main>
-      )}
     </div>
   );
 }

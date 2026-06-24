@@ -152,16 +152,7 @@
 }
 
 /* Badge System */
-.sidebar__badge {
-  font-size: 9px;
-  font-weight: var(--fw-bold);
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-light);
-  color: var(--color-white);
-  box-shadow: 0 0 10px rgba(190, 36, 33, 0.5);
-  letter-spacing: 0.05em;
-}
+
 
 /* Footer Section */
 .sidebar__footer {
@@ -205,7 +196,6 @@
   .sidebar__brand-title,
   .sidebar__section-header,
   .sidebar__label,
-  .sidebar__badge,
   .sidebar__footer {
     display: none;
   }
@@ -304,7 +294,7 @@
   pointer-events: none;
   transform: translateY(-8px) scale(0.97);
   transform-origin: top center;
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .env-select-dropdown--open {
