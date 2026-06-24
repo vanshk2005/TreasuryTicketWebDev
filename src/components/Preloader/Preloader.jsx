@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
-import { EASE, DURATION, IMAGES } from '../../utils/constants';
+import { EASE, DURATION } from '../../utils/constants';
 import './Preloader.css';
 
 /* Realistic candlestick data that starts low on the screen and goes till the top */
@@ -149,7 +149,6 @@ const Preloader = ({ onComplete, onTransitionStart }) => {
     <div className="preloader" ref={containerRef}>
       {/* Background decorations */}
       <div className="preloader__bg">
-        <div className="preloader__bg-image" style={{ backgroundImage: `url(${IMAGES.hero2})` }} />
         <div className="preloader__glow preloader__glow--1" />
         <div className="preloader__glow preloader__glow--2" />
         <div className="preloader__grid" />
@@ -256,3 +255,4 @@ const Preloader = ({ onComplete, onTransitionStart }) => {
 };
 
 export default Preloader;
+
