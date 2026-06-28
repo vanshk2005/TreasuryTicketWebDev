@@ -199,7 +199,8 @@ textarea {
   border-radius: var(--radius-sm);
   color: var(--color-text);
   padding: 0.45rem 0.75rem;
-  font-size: var(--fs-small);
+  font-size: 13px;
+  font-family: var(--font-body);
   transition: all var(--duration-fast) var(--ease-out);
   min-width: 0;
 }
@@ -210,7 +211,8 @@ input[type="date"] {
   border-radius: var(--radius-sm);
   color: var(--color-text);
   padding: 0.45rem 0.75rem;
-  font-size: var(--fs-small);
+  font-size: 13px;
+  font-family: var(--font-body);
   transition: all var(--duration-fast) var(--ease-out);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba%28255, 255, 255, 0.6%29' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -341,4 +343,114 @@ input[disabled] {
 /* Hide local support link since we hoisted it globally */
 .support-link-container-fx {
   display: none !important;
+}
+
+/* ================================================
+   TICKET DESKTOP-APP LAYOUT GRIDS
+   ================================================ */
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.core-identification-grid {
+  display: grid;
+  grid-template-columns: 220px 240px 240px minmax(200px, 1fr);
+  gap: var(--space-md);
+  align-items: start;
+}
+
+.core-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-row.auto-label {
+  grid-template-columns: max-content 1fr;
+}
+
+.comments-section .input-row {
+  grid-template-columns: 140px 1fr;
+}
+
+.comments-section .input-row.extra-wide-label {
+  grid-template-columns: 180px 1fr;
+}
+
+.param-table .input-row, 
+.param-bottom-controls .input-row {
+  grid-template-columns: max-content 1fr;
+}
+
+.input-row label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.input-row input, .input-row select, .input-row textarea {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  font-size: 13px;
+  font-family: var(--font-body);
+  height: 30px;
+}
+
+/* Specific alignments for radios / checkboxes in rows */
+.input-row .custom-checkbox, .input-row .custom-radio {
+  margin-top: 0;
+  font-size: 13px;
+}
+
+/* Parameter Grid Utilities (for FX/NDF tables) */
+.param-table {
+  display: grid;
+  grid-template-columns: 45px repeat(6, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.param-table-header {
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
+.param-row-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-semibold);
+}
+
+.param-bottom-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+/* Spacer block */
+.empty-cell {
+  visibility: hidden;
+}
+
+/* Align values with the grid headers */
+.param-table input, .param-table select {
+  width: 100%;
+  height: 30px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  padding: 0.25rem 0.5rem;
 }

@@ -1,49 +1,44 @@
 import { useState } from 'react';
 import { 
-  Pencil, 
-  Scale, 
-  Coins,
-  Check,
-  Save as SaveIcon,
-  Play,
-  ShieldAlert,
-  Undo2,
-  XSquare,
-  Trash2,
-  LogOut
+  Check, 
+  Save as SaveIcon, 
+  Play, 
+  ShieldAlert, 
+  Undo2, 
+  XSquare, 
+  Trash2, 
+  LogOut,
+  FileText
 } from 'lucide-react';
 import useTradeOperation from '../../utils/useTradeOperation';
-import SettingsModal from '../Modal/SettingsModal';
 import './NostroTicket.css';
 
 const NostroTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast }) => {
-  // Config fields (editable via pencils)
-  const [company, setCompany] = useState('NHI');
-  const [tradingBook, setTradingBook] = useState('TGT8400');
-  const [counterparty, setCounterparty] = useState('NHI');
-
-  // Form Fields
+  // Core config fields
   const [subType, setSubType] = useState('NostroTransfer');
-  const [mirroredTrade, setMirroredTrade] = useState(false);
-  const [tradeDate, setTradeDate] = useState(new Date().toISOString().split('T')[0]);
-  const [tradeId] = useState('NTRM-99120');
-  const [version] = useState('0');
-  const [status] = useState('New');
+  const [company, setCompany] = useState('');
+  const [counterparty, setCounterparty] = useState('');
+  const [tradingBook, setTradingBook] = useState('');
+  const [mirroredTrade, setMirroredTrade] = useState(mirrorTrades || false);
+  const [disableOffMarketChecks, setDisableOffMarketChecks] = useState(disableOffMkt || false);
+  const [tradeDate, setTradeDate] = useState('2026-06-22');
+  const [tradeId, setTradeId] = useState('');
   const [trader, setTrader] = useState('KAKKAR, VANSH [kakkarvan]');
+  const [version, setVersion] = useState('0');
   const [orgTrader, setOrgTrader] = useState('KAKKAR, VANSH [kakkarvan]');
+  const [status, setStatus] = useState('New');
   const [messages, setMessages] = useState('');
-  const [destination] = useState('SMO');
-  const [totoroValuationFunction, setTotoroValuationFunction] = useState('TotoroValuation');
-
-  // Right block fields
+  const [destination, setDestination] = useState('SMO');
   const [tradeReferences, setTradeReferences] = useState('');
+  const [mirrorThis, setMirrorThis] = useState('No');
 
-  // Nostro Transfer Parameters fields
-  const [ccy, setCcy] = useState('USD');
-  const [fromAccount, setFromAccount] = useState('ACC-101-USD');
-  const [toAccount, setToAccount] = useState('ACC-202-USD');
-  const [amount, setAmount] = useState('5000000');
-  const [valueDate, setValueDate] = useState(new Date().toISOString().split('T')[0]);
+  // Params
+  const [totoro, setTotoro] = useState('');
+  const [ccy, setCcy] = useState('');
+  const [fromAccount, setFromAccount] = useState('');
+  const [toAccount, setToAccount] = useState('');
+  const [amount, setAmount] = useState('');
+  const [valueDate, setValueDate] = useState('');
 
   // Comments
   const [changeOwner, setChangeOwner] = useState('');
@@ -55,393 +50,169 @@ const NostroTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast }) =
   const [strategy, setStrategy] = useState('');
   const [accruedInterestOverwrite, setAccruedInterestOverwrite] = useState('None');
 
-  // Modals state
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
-  const [modalField, setModalField] = useState('');
-  const [modalValue, setModalValue] = useState('');
-
-  const handleOpenModal = (title, field, value) => {
-    setModalTitle(title);
-    setModalField(field);
-    setModalValue(value);
-    setModalOpen(true);
-  };
-
-  const handleSaveModal = (newValue) => {
-    if (modalField === 'entity') setCompany(newValue);
-    if (modalField === 'book') setTradingBook(newValue);
-    if (modalField === 'cpEntBook') setCounterparty(newValue);
-    addToast(`Updated configuration field "${modalField}" to ${newValue}`, 'info');
-  };
-
   const handleActionClick = (actionName) => {
-    if (actionName === 'OK' || actionName === 'Commit') {
-      addToast(`Nostro Transfer of ${ccy} ${parseFloat(amount).toLocaleString()} committed successfully!`, 'success');
-    } else if (actionName === 'Validate') {
-      addToast(`Nostro Transfer validation passed. From ${fromAccount} to ${toAccount}.`, 'info');
-    } else if (actionName === 'Save') {
-      addToast(`Nostro Transfer Ticket saved as draft.`, 'success');
-    } else if (actionName === 'Undo') {
-      setAmount('5000000');
-      setFromAccount('ACC-101-USD');
-      setToAccount('ACC-202-USD');
-      addToast(`Reverted parameters to defaults.`, 'info');
-    } else {
-      addToast(`Action "${actionName}" executed.`, 'info');
-    }
+    if (addToast) addToast(`${actionName} action performed on Nostro Ticket`, 'info');
   };
-
   useTradeOperation(handleActionClick);
-
-  if (activeSubTab === 'preferences') {
-    return (
-      <div className="preferences-view glass">
-        <h3>Nostro Transfer Preferences</h3>
-        <p className="subtitle">Configure settings for NTRM settlement accounts</p>
-        <div className="preferences-grid mt-2">
-          <div className="pref-row">
-            <span className="pref-lbl">Enable Account Validation Hooks</span>
-            <label className="custom-checkbox">
-              <input type="checkbox" defaultChecked />
-              <div className="checkbox-box"></div>
-            </label>
-          </div>
-          <div className="pref-row">
-            <span className="pref-lbl">Default Funding Account (USD)</span>
-            <input type="text" defaultValue="ACC-101-USD" />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="ticket-container">
-      {/* Actions Bar matching the screenshot */}
+      {/* Actions Bar */}
       <div className="actions-bar glass">
         <div className="actions-left">
-          <button type="button" onClick={() => handleActionClick('OK')} className="action-btn">
-            <Check size={13} className="act-icon success" /> OK
-          </button>
-          <button type="button" onClick={() => handleActionClick('Save')} className="action-btn">
-            <SaveIcon size={13} className="act-icon" /> Save
-          </button>
-          <button type="button" onClick={() => handleActionClick('Commit')} className="action-btn">
-            <Play size={13} className="act-icon primary" /> Commit
-          </button>
-          <button type="button" onClick={() => handleActionClick('Validate')} className="action-btn">
-            <ShieldAlert size={13} className="act-icon warning" /> Validate
-          </button>
-          <button type="button" onClick={() => handleActionClick('Undo')} className="action-btn">
-            <Undo2 size={13} className="act-icon" /> Undo
-          </button>
+          <button type="button" onClick={() => handleActionClick('OK')} className="action-btn"><Check size={13} className="act-icon success" /> OK</button>
+          <button type="button" onClick={() => handleActionClick('Save')} className="action-btn"><SaveIcon size={13} className="act-icon" /> Save</button>
+          <button type="button" onClick={() => handleActionClick('Commit')} className="action-btn"><Play size={13} className="act-icon primary" /> Commit</button>
+          <button type="button" onClick={() => handleActionClick('Validate')} className="action-btn"><ShieldAlert size={13} className="act-icon warning" /> Validate</button>
+          <button type="button" onClick={() => handleActionClick('Undo')} className="action-btn"><Undo2 size={13} className="act-icon" /> Undo</button>
         </div>
         <div className="actions-right">
-          <button type="button" onClick={() => handleActionClick('Cancel')} className="action-btn">
-            <XSquare size={13} className="act-icon" /> Cancel
-          </button>
-          <button type="button" onClick={() => handleActionClick('Delete')} className="action-btn">
-            <Trash2 size={13} className="act-icon bearish" /> Delete
-          </button>
-          <button type="button" onClick={() => handleActionClick('Exit')} className="action-btn">
-            <LogOut size={13} className="act-icon" /> Exit
-          </button>
+
+          <div className="action-checkboxes" style={{ display: 'flex', gap: '15px', marginRight: '20px', alignItems: 'center' }}>
+            <label className="custom-checkbox">
+              <input type="checkbox" checked={mirroredTrade} onChange={(e) => setMirroredTrade(e.target.checked)} />
+              <div className="checkbox-box"></div><span style={{color: 'var(--color-text)', fontSize: '12px'}}>Mirror Trades</span>
+            </label>
+            <label className="custom-checkbox">
+              <input type="checkbox" checked={disableOffMarketChecks} onChange={(e) => setDisableOffMarketChecks(e.target.checked)} />
+              <div className="checkbox-box"></div><span style={{color: 'var(--color-text)', fontSize: '12px'}}>Disable OffMkt Checks</span>
+            </label>
+          </div>
+          <button type="button" onClick={() => handleActionClick('Cancel')} className="action-btn"><XSquare size={13} className="act-icon" /> Cancel</button>
+          <button type="button" onClick={() => handleActionClick('Delete')} className="action-btn"><Trash2 size={13} className="act-icon bearish" /> Delete</button>
+          <button type="button" onClick={() => handleActionClick('Exit')} className="action-btn"><LogOut size={13} className="act-icon" /> Exit</button>
         </div>
       </div>
 
-      {/* Main Form content */}
       <form onSubmit={(e) => e.preventDefault()} className="ticket-form">
-        {/* Core Identification Block */}
+        
+        {/* Core Identification Grid */}
         <div className="form-section glass">
-          <h3 className="section-title">
-            <Coins size={14} className="section-title-icon" />
-            Nostro Core Identification
-          </h3>
-          
-          <div className="ntrm-top-layout">
-            {/* Grid for Columns 1, 2, 3 */}
-            <div className="ntrm-grid-left">
-              {/* Row 1 */}
-              <div className="input-group">
-                <label>Trade Type</label>
-                <input type="text" value="NTRM" disabled className="locked-input" />
-              </div>
-              <div className="input-group input-group--editable">
-                <label>Company</label>
-                <div className="editable-field">
-                  <span className="field-value">{company}</span>
-                  <button 
-                    type="button" 
-                    onClick={() => handleOpenModal('Select Company', 'entity', company)}
-                    className="edit-pencil-btn"
-                  >
-                    <Pencil size={12} />
-                  </button>
-                </div>
-              </div>
-              <div className="input-group input-group--editable">
-                <label>Counterparty</label>
-                <div className="editable-field">
-                  <span className="field-value">{counterparty}</span>
-                  <button 
-                    type="button" 
-                    onClick={() => handleOpenModal('Select Counterparty', 'cpEntBook', counterparty)}
-                    className="edit-pencil-btn"
-                  >
-                    <Pencil size={12} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 2 */}
-              <div className="input-group">
+          <div className="core-identification-grid">
+            {/* Column 1 */}
+            <div className="core-column">
+              <div className="input-row"><label>Trade Type</label><input type="text" value="NTRM" disabled /></div>
+              <div className="input-row">
                 <label>Sub Type</label>
                 <select value={subType} onChange={(e) => setSubType(e.target.value)}>
                   <option value="NostroTransfer">NostroTransfer</option>
                 </select>
               </div>
-              <div className="input-group input-group--editable">
-                <label>Trading Book</label>
-                <div className="editable-field">
-                  <span className="field-value">{tradingBook}</span>
-                  <button 
-                    type="button" 
-                    onClick={() => handleOpenModal('Select Trading Book', 'book', tradingBook)}
-                    className="edit-pencil-btn"
-                  >
-                    <Pencil size={12} />
-                  </button>
-                </div>
-              </div>
-              <div className="input-group">
-                <label>Trade Date</label>
-                <input type="date" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} />
-              </div>
-
-              {/* Row 3 */}
-              <div className="input-group">
-                <label>Trade Id</label>
-                <input type="text" value={tradeId} disabled />
-              </div>
-              <div className="input-group-placeholder"></div> {/* Empty spacer to match visual layout grid */}
-              <div className="input-group">
-                <label>Trader</label>
-                <input type="text" value={trader} onChange={(e) => setTrader(e.target.value)} />
-              </div>
-
-              {/* Row 4 */}
-              <div className="input-group">
-                <label>Version</label>
-                <input type="text" value={version} disabled />
-              </div>
-              <div className="input-group">
-                <label>Messages</label>
-                <input type="text" value={messages} onChange={(e) => setMessages(e.target.value)} placeholder="Logs..." />
-              </div>
-              <div className="input-group">
-                <label>Original Trader</label>
-                <input type="text" value={orgTrader} onChange={(e) => setOrgTrader(e.target.value)} />
-              </div>
-
-              {/* Row 5 */}
-              <div className="input-group">
-                <label>Status</label>
-                <input type="text" value={status} disabled className="status-new" />
-              </div>
-              <div className="input-group-placeholder"></div>
-              <div className="input-group-placeholder"></div>
-
-              {/* Row 6 */}
-              <div className="input-group">
-                <label>Destination</label>
-                <input type="text" value={destination} disabled />
-              </div>
-              <div className="input-group span-two">
-                <label>TotoroValuationFunction</label>
-                <select value={totoroValuationFunction} onChange={(e) => setTotoroValuationFunction(e.target.value)}>
-                  <option value="TotoroValuation">TotoroValuation</option>
-                  <option value="Option 2">Option 2</option>
-                </select>
-              </div>
+              <div className="input-row"><label>Trade Id</label><input type="text" value={tradeId} disabled /></div>
+              <div className="input-row"><label>Version</label><input type="text" value={version} disabled /></div>
+              <div className="input-row"><label>Status</label><input type="text" value={status} disabled /></div>
+              <div className="input-row"><label>Destination</label><input type="text" value={destination} disabled /></div>
             </div>
 
-            {/* Column 4: Right References Column */}
-            <div className="ntrm-grid-right">
-              <div className="textarea-ref-group">
-                <label>Trade References</label>
-                <textarea 
-                  value={tradeReferences} 
-                  onChange={(e) => setTradeReferences(e.target.value)}
-                  placeholder="Enter trade reference notes..."
-                  rows={6}
-                />
+            {/* Column 2 */}
+            <div className="core-column">
+              <div className="input-row">
+                <label>Company</label>
+                <select value={company} onChange={(e) => setCompany(e.target.value)}><option value=""></option></select>
               </div>
-              {/* Note: Nostro has no "Mirror This" radio options in the desktop view */}
-              <div className="radio-spacer-empty" style={{ flex: 1 }}></div>
+              
+              <div className="input-row">
+                <label>Trading Book</label>
+                <select value={tradingBook} onChange={(e) => setTradingBook(e.target.value)}><option value=""></option></select>
+              </div>
+              <div className="input-row"><label>Messages</label><input type="text" value={messages} onChange={(e) => setMessages(e.target.value)} /></div>
+            </div>
+
+            {/* Column 3 */}
+            <div className="core-column">
+              <div className="input-row">
+                <label>Counterparty</label>
+                <select value={counterparty} onChange={(e) => setCounterparty(e.target.value)}><option value=""></option></select>
+              </div>
+              <div className="input-row"><label>Trade Date</label><input type="date" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} /></div>
+              <div className="input-row"><label>Trader</label><input type="text" value={trader} onChange={(e) => setTrader(e.target.value)} /></div>
+              <div className="input-row"><label>Original Trader</label><input type="text" value={orgTrader} onChange={(e) => setOrgTrader(e.target.value)} /></div>
+            </div>
+
+            {/* Column 4 */}
+            <div className="core-column">
+              <div className="input-row" style={{ gridTemplateColumns: '1fr', gap: '0.1rem' }}>
+                <label>Trade References</label>
+                <textarea rows={3} value={tradeReferences} onChange={(e) => setTradeReferences(e.target.value)} />
+              </div>
+              <div className="input-row" style={{marginTop: '0.5rem'}}>
+                <label>Mirror This</label>
+                <div style={{display: 'flex', gap: '15px'}}>
+                  <label className="custom-radio">
+                    <input type="radio" value="Yes" checked={mirrorThis === 'Yes'} onChange={() => setMirrorThis('Yes')} />
+                    <div className="radio-circle"></div><span>Yes</span>
+                  </label>
+                  <label className="custom-radio">
+                    <input type="radio" value="No" checked={mirrorThis === 'No'} onChange={() => setMirrorThis('No')} />
+                    <div className="radio-circle"></div><span>No</span>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Parameters Block */}
+        {/* Parameters Grid for Nostro Transfer */}
         <div className="form-section glass">
-          <h3 className="section-title">
-            <Scale size={14} className="section-title-icon" />
-            Nostro Transfer Parameters
-          </h3>
-          
-          <div className="nostro-parameters-layout">
-            {/* Row 1: Ccy, From Account, Amount, Value Date */}
-            <div className="nostro-params-row-1">
-              <div className="sub-input">
-                <label>Ccy</label>
-                <select value={ccy} onChange={(e) => setCcy(e.target.value)}>
-                  <option value="USD">USD</option>
-                  <option value="JPY">JPY</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </select>
-              </div>
-              <div className="sub-input">
-                <label>From Account</label>
-                <select value={fromAccount} onChange={(e) => setFromAccount(e.target.value)}>
-                  <option value="ACC-101-USD">ACC-101-USD (Citibank NY)</option>
-                  <option value="ACC-102-JPY">ACC-102-JPY (MUFG Tokyo)</option>
-                  <option value="ACC-103-EUR">ACC-103-EUR (Deutsche Bank)</option>
-                </select>
-              </div>
-              <div className="sub-input">
-                <label>Amount</label>
-                <input 
-                  type="number" 
-                  value={amount} 
-                  onChange={(e) => setAmount(e.target.value)} 
-                />
-              </div>
-              <div className="sub-input">
-                <label>Value Date</label>
-                <input 
-                  type="date" 
-                  value={valueDate} 
-                  onChange={(e) => setValueDate(e.target.value)} 
-                />
-              </div>
-            </div>
+          <div className="input-row auto-label" style={{ width: '400px', margin: '0 auto 1rem auto' }}>
+            <label style={{textAlign: 'right', marginRight: '0.5rem'}}>TotoroValuationFunction</label>
+            <select value={totoro} onChange={(e) => setTotoro(e.target.value)}><option value=""></option></select>
+          </div>
 
-            {/* Row 2: To Account positioned directly below From Account */}
-            <div className="nostro-params-row-2">
-              <div className="sub-input">
-                <label>To Account</label>
-                <select value={toAccount} onChange={(e) => setToAccount(e.target.value)}>
-                  <option value="ACC-202-USD">ACC-202-USD (JP Morgan NY)</option>
-                  <option value="ACC-203-JPY">ACC-203-JPY (SMBC Tokyo)</option>
-                  <option value="ACC-204-EUR">ACC-204-EUR (BNP Paribas)</option>
-                </select>
-              </div>
+          <div className="param-table" style={{ gridTemplateColumns: '60px 250px 150px 150px 1fr' }}>
+            <div className="empty-cell"></div>
+            <div className="param-table-header" style={{textAlign: 'center'}}>From Account</div>
+            <div className="param-table-header" style={{textAlign: 'center'}}>Amount</div>
+            <div className="param-table-header" style={{textAlign: 'center'}}>Value Date</div>
+            <div className="empty-cell"></div>
+
+            {/* Row 1 */}
+            <div className="param-row-label" style={{textAlign: 'right', paddingRight: '10px'}}>Ccy</div>
+            <select value={ccy} onChange={(e) => setCcy(e.target.value)}><option value=""></option></select>
+            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <div style={{display: 'flex', gap: '5px', alignItems: 'center'}}>
+              <label className="custom-checkbox"><input type="checkbox" /><div className="checkbox-box"></div></label>
+              <input type="date" value={valueDate} onChange={(e) => setValueDate(e.target.value)} style={{width: '100%'}}/>
             </div>
+            <div className="empty-cell"></div>
+
+            {/* Row 2 */}
+            <div className="empty-cell"></div>
+            <div className="param-table-header" style={{textAlign: 'center', marginTop: '10px'}}>To Account</div>
+            <div className="empty-cell"></div>
+            <div className="empty-cell"></div>
+            <div className="empty-cell"></div>
+
+            <div className="empty-cell"></div>
+            <select value={toAccount} onChange={(e) => setToAccount(e.target.value)}><option value=""></option></select>
+            <div className="empty-cell"></div>
+            <div className="empty-cell"></div>
+            <div className="empty-cell"></div>
           </div>
         </div>
 
         {/* Change and Settlement Comments */}
-        <div className="form-section glass">
-          <h3 className="section-title">Comments & Strategy</h3>
-          
-          <div className="nostro-comments-grid">
-            {/* Change comments */}
-            <div className="comment-block">
-              <div className="input-group">
-                <label>ChangeOwner</label>
-                <input 
-                  type="text" 
-                  placeholder="Change Owner" 
-                  value={changeOwner} 
-                  onChange={(e) => setChangeOwner(e.target.value)} 
-                />
-              </div>
-              <div className="input-group">
-                <label>ChangeReason</label>
-                <input 
-                  type="text" 
-                  placeholder="Change Reason" 
-                  value={changeReason} 
-                  onChange={(e) => setChangeReason(e.target.value)} 
-                />
-              </div>
-              <div className="input-group">
-                <label>ChangeComment</label>
-                <textarea 
-                  rows={2} 
-                  placeholder="Change Comment" 
-                  value={changeComment} 
-                  onChange={(e) => setChangeComment(e.target.value)} 
-                />
-              </div>
+        <div className="form-section glass comments-section">
+          <div className="core-identification-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="core-column">
+              <div className="input-row"><label>ChangeOwner</label><select value={changeOwner} onChange={(e) => setChangeOwner(e.target.value)}><option value=""></option></select></div>
+              <div className="input-row"><label>ChangeComment</label><input type="text" value={changeComment} onChange={(e) => setChangeComment(e.target.value)} /></div>
+              <div className="input-row"><label>Comment</label><input type="text" value={comment} onChange={(e) => setComment(e.target.value)} /></div>
+              <div className="input-row"><label>Settlement Comment</label><input type="text" value={settlementComment} onChange={(e) => setSettlementComment(e.target.value)} /></div>
+              <div className="input-row"><label>Holidays</label><select value={holidays} onChange={(e) => setHolidays(e.target.value)}><option value="None">None</option></select></div>
             </div>
-
-            {/* Strategy and settlement */}
-            <div className="comment-block">
-              <div className="input-group">
-                <label>Comment</label>
-                <input 
-                  type="text" 
-                  placeholder="General comments..." 
-                  value={comment} 
-                  onChange={(e) => setComment(e.target.value)} 
-                />
-              </div>
-              <div className="input-group">
-                <label>Settlement Comment</label>
-                <input 
-                  type="text" 
-                  placeholder="Settlement notes..." 
-                  value={settlementComment} 
-                  onChange={(e) => setSettlementComment(e.target.value)} 
-                />
-              </div>
-              
-              <div className="input-group-row">
-                <div className="input-group half-width">
-                  <label>Holidays</label>
-                  <input type="text" value={holidays} onChange={(e) => setHolidays(e.target.value)} />
-                </div>
-                <div className="input-group half-width">
-                  <label>Strategy</label>
-                  <input type="text" value={strategy} onChange={(e) => setStrategy(e.target.value)} />
-                </div>
-              </div>
-
-              <div className="input-group mt-2">
-                <label>Accrued Interest Overwrite</label>
-                <select 
-                  value={accruedInterestOverwrite} 
-                  onChange={(e) => setAccruedInterestOverwrite(e.target.value)}
-                >
-                  <option value="None">None</option>
-                  <option value="True">True</option>
-                  <option value="False">False</option>
-                </select>
-              </div>
+            
+            <div className="core-column">
+              <div className="input-row"><label>ChangeReason</label><input type="text" value={changeReason} onChange={(e) => setChangeReason(e.target.value)} /></div>
+              <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
+              <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
+              <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
+              <div className="input-row"><label>Strategy</label><input type="text" value={strategy} onChange={(e) => setStrategy(e.target.value)} /></div>
+              <div className="input-row extra-wide-label"><label>Accrued Interest Overwrite</label><select value={accruedInterestOverwrite} onChange={(e) => setAccruedInterestOverwrite(e.target.value)}><option value="None">None</option></select></div>
             </div>
           </div>
         </div>
-
-        {/* Support Link */}
-        <div className="support-link-container-fx">
-          <a href="#support" className="support-link" onClick={() => addToast('Connecting to NTRM support...', 'info')}>
-            Treasury Support
-          </a>
-        </div>
       </form>
-
-      {/* Modal Settings Render */}
-      <SettingsModal 
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={modalTitle}
-        field={modalField}
-        value={modalValue}
-        onSave={handleSaveModal}
-      />
     </div>
   );
 };
