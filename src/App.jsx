@@ -29,7 +29,41 @@ function App() {
   // Hoisted toast notifications list
   const [toasts, setToasts] = useState([]);
 
-  const handleEnvChange = (newEnv) => {
+  const [draftDataToLoad, setDraftDataToLoad] = useState(null);
+  const [trades, setTrades] = useState([
+    { id: 'MM-99482', type: 'MM', subType: 'InternalDeposit', status: 'Committed', cpart: 'NHI', ccy: 'USD', notional: 10000000, valueDate: '2026-06-24', book: 'TGT8400', trader: 'KAKKAR, VANSH' },
+    { id: 'FX-88401', type: 'FX OUTRIGHT', subType: 'NearLeg', status: 'Committed', cpart: 'BARC', ccy: 'EUR', notional: 15000000, valueDate: '2026-06-25', book: 'FX_MAIN', trader: 'KAKKAR, VANSH' },
+    { id: 'SW-77301', type: 'FX SWAP', subType: 'SwapLegs', status: 'Pending', cpart: 'HSBC', ccy: 'JPY', notional: 25000000, valueDate: '2026-06-30', book: 'FX_SWAP_BK', trader: 'KAKKAR, VANSH' },
+    { id: 'NT-66102', type: 'NTRM', subType: 'NostroTransfer', status: 'Committed', cpart: 'SMO', ccy: 'USD', notional: 5000000, valueDate: '2026-06-24', book: 'NOS_ACC', trader: 'KAKKAR, VANSH' },
+    { id: 'FC-55209', type: 'NTRM', subType: 'FreeCash', status: 'Pending', cpart: 'SMO', ccy: 'GBP', notional: 8000000, valueDate: '2026-06-26', book: 'NOS_CASH', trader: 'KAKKAR, VANSH' },
+    { id: 'ND-44391', type: 'NDF', subType: 'NDFOutright', status: 'Committed', cpart: 'CITI', ccy: 'USD', notional: 12000000, valueDate: '2026-07-02', book: 'NDF_DESK', trader: 'KAKKAR, VANSH' },
+    { id: 'NS-33108', type: 'NDF SWAP', subType: 'NDFSwap', status: 'Cancelled', cpart: 'JPM', ccy: 'USD', notional: 20000000, valueDate: '2026-07-10', book: 'NDF_SWAP_BK', trader: 'KAKKAR, VANSH' },
+  ]);
+
+  const addTrade = (tradeData) => {
+    setTrades(prev => [tradeData, ...prev]);
+  };
+
+  const updateTradeStatus = (tradeId, newStatus) => {
+    setTrades(prev => prev.map(t => t.id === tradeId ? { ...t, status: newStatus } : t));
+  };
+
+  const editDraftTrade = (tradeId) => {
+    const trade = trades.find(t => t.id === tradeId);
+    if (trade && trade.status === 'Draft') {
+      setDraftDataToLoad(trade);
+      const typeMap = {
+        'MM': 'mm', 'FXOUTRIGHT': 'fx-outright', 'FX SWAP': 'fx-swap',
+        'NTRM': 'nostro', 'NDF': 'ndf-outright', 'NDF SWAP': 'ndf-swap'
+      };
+      // For FreeCash, it's also NTRM, we'll map NTRM to Nostro and just rely on the user to use the right ticket
+      // Actually let's do a better mapping:
+      let tab = typeMap[trade.type];
+      if (trade.type === 'NTRM' && trade.subType === 'FreeCash') tab = 'free-cash';
+      if (tab) setActiveTab(tab);
+    }
+  };
+const handleEnvChange = (newEnv) => {
     setActiveEnv(newEnv);
     addToast(`Switched active desk/system to: ${newEnv}`, 'info');
   };
@@ -71,6 +105,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -82,6 +120,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -93,6 +135,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -104,6 +150,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -115,6 +165,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -126,6 +180,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -137,6 +195,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -154,6 +216,10 @@ function App() {
           mirrorTrades={mirrorTrades}
           disableOffMkt={disableOffMkt}
           addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
         />
       );
     }
@@ -162,6 +228,9 @@ function App() {
       return (
         <MyTrades 
           addToast={addToast}
+          addTrade={addTrade}
+          trades={trades}
+          editDraftTrade={editDraftTrade}
         />
       );
     }
@@ -215,6 +284,10 @@ function App() {
             activeEnv={activeEnv}
             setActiveEnv={handleEnvChange}
             addToast={addToast}
+          addTrade={addTrade}
+          updateTradeStatus={updateTradeStatus}
+          draftDataToLoad={draftDataToLoad}
+          setDraftDataToLoad={setDraftDataToLoad}
           />
           
           {/* Right Workspace Wrapper */}

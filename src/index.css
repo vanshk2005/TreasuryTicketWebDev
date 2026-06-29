@@ -39,7 +39,7 @@
   --fs-h4: clamp(1.1rem, 1.5vw, 1.5rem);
   --fs-body-lg: clamp(1.05rem, 1.2vw, 1.25rem);
   --fs-body: clamp(0.9rem, 1vw, 1.05rem);
-  --fs-small: clamp(0.8rem, 0.85vw, 0.9rem);
+  --fs-small: clamp(0.85rem, 0.9vw, 1rem);
   --fs-caption: clamp(0.7rem, 0.75vw, 0.8rem);
   --fs-counter: clamp(2.5rem, 6vw, 6.5rem);
 
@@ -198,11 +198,35 @@ textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   color: var(--color-text);
+  padding: 0.35rem 0.6rem;
+  font-family: inherit;
+  font-size: 14px;
+  height: 34px;
+  width: 100%;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+/* Remove arrows from number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input:focus,
+textarea:focus {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
   padding: 0.45rem 0.75rem;
-  font-size: 13px;
-  font-family: var(--font-body);
-  transition: all var(--duration-fast) var(--ease-out);
-  min-width: 0;
+  border-color: var(--color-primary-light);
+  background-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 8px rgba(190, 36, 33, 0.2);
 }
 
 input[type="date"] {
@@ -211,7 +235,7 @@ input[type="date"] {
   border-radius: var(--radius-sm);
   color: var(--color-text);
   padding: 0.45rem 0.75rem;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-body);
   transition: all var(--duration-fast) var(--ease-out);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba%28255, 255, 255, 0.6%29' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
@@ -348,17 +372,27 @@ input[disabled] {
 /* ================================================
    TICKET DESKTOP-APP LAYOUT GRIDS
    ================================================ */
+.ticket-container {
+  width: 100%;
+  padding: 1rem 0;
+}
+
 .ticket-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-lg);
+}
+
+.form-section {
+  padding: 2rem;
+  border-radius: var(--radius-lg);
 }
 
 .core-identification-grid {
   display: grid;
-  grid-template-columns: 220px 240px 240px minmax(200px, 1fr);
-  gap: var(--space-md);
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: var(--space-md);
 }
 
 .core-column {
@@ -369,9 +403,9 @@ input[disabled] {
 
 .input-row {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 180px 1fr;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.25rem;
 }
 
 .input-row.auto-label {
@@ -379,11 +413,11 @@ input[disabled] {
 }
 
 .comments-section .input-row {
-  grid-template-columns: 140px 1fr;
+  grid-template-columns: 180px 1fr;
 }
 
 .comments-section .input-row.extra-wide-label {
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 220px 1fr;
 }
 
 .param-table .input-row, 
@@ -392,23 +426,23 @@ input[disabled] {
 }
 
 .input-row label {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
 .input-row input, .input-row select, .input-row textarea {
   width: 100%;
-  padding: 0.25rem 0.5rem;
-  font-size: 13px;
+  padding: 0.35rem 0.6rem;
+  font-size: 14px;
   font-family: var(--font-body);
-  height: 30px;
+  height: 34px;
 }
 
 /* Specific alignments for radios / checkboxes in rows */
 .input-row .custom-checkbox, .input-row .custom-radio {
   margin-top: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 /* Parameter Grid Utilities (for FX/NDF tables) */
@@ -428,7 +462,7 @@ input[disabled] {
 }
 
 .param-row-label {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-secondary);
   font-weight: var(--fw-semibold);
 }
@@ -436,7 +470,7 @@ input[disabled] {
 .param-bottom-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.25rem;
   margin-top: 1rem;
   align-items: center;
 }
@@ -449,8 +483,52 @@ input[disabled] {
 /* Align values with the grid headers */
 .param-table input, .param-table select {
   width: 100%;
-  height: 30px;
-  font-size: 13px;
+  height: 34px;
+  font-size: 14px;
   font-family: var(--font-body);
-  padding: 0.25rem 0.5rem;
+  padding: 0.35rem 0.6rem;
 }
+
+/* Global Actions Bar */
+.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.actions-left,
+.actions-right {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.85rem;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  border-color: var(--color-text-secondary);
+}
+
+.act-icon {
+  color: var(--color-text-muted);
+}
+.act-icon.success { color: var(--color-success); }
+.act-icon.primary { color: var(--color-primary-light); }
+.act-icon.warning { color: #ffb300; }
+.act-icon.bearish { color: var(--color-accent); }

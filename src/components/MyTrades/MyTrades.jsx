@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   Search, 
@@ -7,31 +7,125 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  ExternalLink
+  ExternalLink,
+  GripHorizontal,
+  FileEdit
 } from 'lucide-react';
 import './MyTrades.css';
 
-const MyTrades = ({ addToast }) => {
+const MyTrades = ({ addToast, trades, editDraftTrade }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrade, setSelectedTrade] = useState(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showDraftsOnly, setShowDraftsOnly] = useState(false);
 
-  // Mock Trades Data
-  const mockTrades = [
-    { id: 'MM-99482', type: 'MM', subType: 'InternalDeposit', status: 'Committed', cpart: 'NHI', ccy: 'USD', notional: 10000000, valueDate: '2026-06-24', book: 'TGT8400', trader: 'KAKKAR, VANSH' },
-    { id: 'FX-88401', type: 'FX OUTRIGHT', subType: 'NearLeg', status: 'Committed', cpart: 'BARC', ccy: 'EUR', notional: 15000000, valueDate: '2026-06-25', book: 'FX_MAIN', trader: 'KAKKAR, VANSH' },
-    { id: 'SW-77301', type: 'FX SWAP', subType: 'SwapLegs', status: 'Pending', cpart: 'HSBC', ccy: 'JPY', notional: 25000000, valueDate: '2026-06-30', book: 'FX_SWAP_BK', trader: 'KAKKAR, VANSH' },
-    { id: 'NT-66102', type: 'NTRM', subType: 'NostroTransfer', status: 'Committed', cpart: 'SMO', ccy: 'USD', notional: 5000000, valueDate: '2026-06-24', book: 'NOS_ACC', trader: 'KAKKAR, VANSH' },
-    { id: 'FC-55209', type: 'NTRM', subType: 'FreeCash', status: 'Pending', cpart: 'SMO', ccy: 'GBP', notional: 8000000, valueDate: '2026-06-26', book: 'NOS_CASH', trader: 'KAKKAR, VANSH' },
-    { id: 'ND-44391', type: 'NDF', subType: 'NDFOutright', status: 'Committed', cpart: 'CITI', ccy: 'USD', notional: 12000000, valueDate: '2026-07-02', book: 'NDF_DESK', trader: 'KAKKAR, VANSH' },
-    { id: 'NS-33108', type: 'NDF SWAP', subType: 'NDFSwap', status: 'Cancelled', cpart: 'JPM', ccy: 'USD', notional: 20000000, valueDate: '2026-07-10', book: 'NDF_SWAP_BK', trader: 'KAKKAR, VANSH' },
+  const initialColumns = [
+    { id: 'id', label: 'Trade ID', visible: true },
+    { id: 'type', label: 'Type', visible: true },
+    { id: 'subType', label: 'Sub Type', visible: true },
+    { id: 'status', label: 'Status', visible: true },
+    { id: 'cpart', label: 'Cpty', visible: true },
+    { id: 'ccy', label: 'Ccy', visible: true },
+    { id: 'notional', label: 'Notional', visible: true, align: 'right' },
+    { id: 'valueDate', label: 'Value Date', visible: true },
+    { id: 'book', label: 'Book', visible: true },
+    { id: 'actions', label: 'Actions', visible: true, unhidable: true }
   ];
 
-  const filteredTrades = mockTrades.filter(t => 
-    t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.cpart.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.book.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [columns, setColumns] = useState(initialColumns);
+
+  const filteredTrades = (trades || []).filter(t => {
+    const matchesView = showDraftsOnly ? t.status === 'Draft' : t.status !== 'Draft';
+    if (!matchesView) return false;
+    
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      (t.id && t.id.toLowerCase().includes(term)) ||
+      (t.type && t.type.toLowerCase().includes(term)) ||
+      (t.cpart && t.cpart.toLowerCase().includes(term)) ||
+      (t.book && t.book.toLowerCase().includes(term))
+    );
+  });
+
+  const toggleColumn = (colId) => {
+    setColumns(cols => cols.map(c => c.id === colId && !c.unhidable ? { ...c, visible: !c.visible } : c));
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e, index) => {
+    e.dataTransfer.setData('colIdx', index);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetIndex) => {
+    e.preventDefault();
+    const sourceIndex = parseInt(e.dataTransfer.getData('colIdx'), 10);
+    if (sourceIndex === targetIndex || isNaN(sourceIndex)) return;
+
+    const newCols = [...columns];
+    const visibleNewCols = newCols.filter(c => c.visible);
+    const sourceCol = visibleNewCols[sourceIndex];
+    const targetCol = visibleNewCols[targetIndex];
+
+    const actualSourceIndex = newCols.findIndex(c => c.id === sourceCol.id);
+    const actualTargetIndex = newCols.findIndex(c => c.id === targetCol.id);
+
+    const [movedCol] = newCols.splice(actualSourceIndex, 1);
+    newCols.splice(actualTargetIndex, 0, movedCol);
+    setColumns(newCols);
+  };
+
+  // Click outside to close filter
+  const filterRef = useRef();
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const renderCellContent = (col, trade) => {
+    switch(col.id) {
+      case 'id': return <span className="trade-id-cell">{trade.id}</span>;
+      case 'type': return <span className="badge badge--type">{trade.type}</span>;
+      case 'subType': return trade.subType;
+      case 'status': return <span className={"badge badge--status " + trade.status.toLowerCase()}>{trade.status}</span>;
+      case 'cpart': return trade.cpart;
+      case 'ccy': return trade.ccy;
+      case 'notional': return trade.notional.toLocaleString();
+      case 'valueDate': return trade.valueDate;
+      case 'book': return <code>{trade.book}</code>;
+      case 'actions': return (
+        <div style={{ display: 'flex', gap: '5px' }}>
+          <button type="button" className="view-details-btn" title="View Audit Trail" onClick={(e) => {
+            e.stopPropagation();
+            setSelectedTrade(trade);
+            if (addToast) addToast('Loaded trade details for ' + trade.id, 'info');
+          }}>
+            <ExternalLink size={12} />
+          </button>
+          {trade.status === 'Draft' && editDraftTrade && (
+            <button type="button" className="view-details-btn" title="Edit Draft" style={{ color: 'var(--color-primary-light)' }} onClick={(e) => {
+              e.stopPropagation();
+              editDraftTrade(trade.id);
+            }}>
+              Edit
+            </button>
+          )}
+        </div>
+      );
+      default: return null;
+    }
+  };
+
+  const visibleColumns = columns.filter(c => c.visible);
 
   return (
     <div className="my-trades-container">
@@ -50,7 +144,7 @@ const MyTrades = ({ addToast }) => {
             <span className="summary-title">Active Deals</span>
             <CheckCircle2 size={16} className="summary-icon text-success" />
           </div>
-          <div className="summary-value">12 Trades</div>
+          <div className="summary-value">{(trades || []).length} Trades</div>
           <div className="summary-subtext">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
         </div>
         <div className="summary-card glass">
@@ -80,10 +174,56 @@ const MyTrades = ({ addToast }) => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="filter-btn" onClick={() => addToast('Filters cleared', 'info')}>
-              <Filter size={14} />
-              <span>Filter</span>
+            
+            <button 
+              className={`filter-btn ${showDraftsOnly ? "active" : ""}`}
+              style={{ marginRight: '10px' }}
+              onClick={() => setShowDraftsOnly(!showDraftsOnly)}
+            >
+              <FileEdit size={14} />
+              <span>{showDraftsOnly ? "View Live Trades" : "View Drafts"}</span>
             </button>
+            
+            <div className="filter-dropdown-container" ref={filterRef} style={{ position: 'relative' }}>
+              <button 
+                className={"filter-btn " + (isFilterOpen ? "active" : "")}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                <Filter size={14} />
+                <span>Columns</span>
+              </button>
+              
+              {isFilterOpen && (
+                <div className="filter-popup glass" style={{
+                  position: 'absolute', 
+                  right: 0, 
+                  top: '120%', 
+                  zIndex: 100, 
+                  padding: '1rem',
+                  borderRadius: 'var(--radius-sm)',
+                  minWidth: '200px',
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem'
+                }}>
+                  <h5 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text-muted)' }}>Visible Columns</h5>
+                  {columns.map(col => (
+                    <label key={col.id} className="custom-checkbox" style={{ opacity: col.unhidable ? 0.5 : 1 }}>
+                      <input 
+                        type="checkbox" 
+                        checked={col.visible} 
+                        disabled={col.unhidable}
+                        onChange={() => toggleColumn(col.id)} 
+                      />
+                      <div className="checkbox-box"></div>
+                      <span style={{ fontSize: '13px' }}>{col.label}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -92,58 +232,41 @@ const MyTrades = ({ addToast }) => {
           <table className="blotter-table">
             <thead>
               <tr>
-                <th>Trade ID</th>
-                <th>Type</th>
-                <th>Sub Type</th>
-                <th>Status</th>
-                <th>Cpty</th>
-                <th>Ccy</th>
-                <th className="text-right">Notional</th>
-                <th>Value Date</th>
-                <th>Book</th>
-                <th>Actions</th>
+                {visibleColumns.map((col, index) => (
+                  <th 
+                    key={col.id}
+                    className={col.align === 'right' ? 'text-right' : ''}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    style={{ cursor: 'grab' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: col.align === 'right' ? 'flex-end' : 'flex-start', gap: '5px' }}>
+                      <GripHorizontal size={12} style={{ opacity: 0.3 }} />
+                      {col.label}
+                    </div>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {filteredTrades.map((trade) => (
                 <tr 
                   key={trade.id} 
-                  className={`blotter-row ${selectedTrade?.id === trade.id ? 'blotter-row--selected' : ''}`}
+                  className={"blotter-row " + (selectedTrade?.id === trade.id ? 'blotter-row--selected' : '')}
                   onClick={() => setSelectedTrade(trade)}
                 >
-                  <td className="trade-id-cell">{trade.id}</td>
-                  <td><span className="badge badge--type">{trade.type}</span></td>
-                  <td>{trade.subType}</td>
-                  <td>
-                    <span className={`badge badge--status ${trade.status.toLowerCase()}`}>
-                      {trade.status}
-                    </span>
-                  </td>
-                  <td>{trade.cpart}</td>
-                  <td>{trade.ccy}</td>
-                  <td className="text-right notional-cell">
-                    {trade.notional.toLocaleString()}
-                  </td>
-                  <td>{trade.valueDate}</td>
-                  <td><code>{trade.book}</code></td>
-                  <td>
-                    <button 
-                      type="button" 
-                      className="view-details-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedTrade(trade);
-                        addToast(`Loaded trade details for ${trade.id}`, 'info');
-                      }}
-                    >
-                      <ExternalLink size={12} />
-                    </button>
-                  </td>
+                  {visibleColumns.map(col => (
+                    <td key={col.id} className={col.align === 'right' ? 'text-right notional-cell' : ''}>
+                      {renderCellContent(col, trade)}
+                    </td>
+                  ))}
                 </tr>
               ))}
               {filteredTrades.length === 0 && (
                 <tr>
-                  <td colSpan="10" className="no-trades-cell">
+                  <td colSpan={visibleColumns.length} className="no-trades-cell">
                     <AlertCircle size={20} className="mb-1 text-muted" />
                     <p>No trades found matching search term.</p>
                   </td>

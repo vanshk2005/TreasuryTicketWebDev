@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Check, 
   Save as SaveIcon, 
@@ -11,9 +11,11 @@ import {
   Coins
 } from 'lucide-react';
 import useTradeOperation from '../../utils/useTradeOperation';
+import useTicketStateMachine from '../../utils/useTicketStateMachine';
+import SearchableSelect from '../SearchableSelect/SearchableSelect';
 import './FreeCashTicket.css';
 
-const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast }) => {
+const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast, addTrade, updateTradeStatus, draftDataToLoad, setDraftDataToLoad }) => {
   // Core config fields
   const [subType, setSubType] = useState('FreeCash');
   const [company, setCompany] = useState('');
@@ -27,7 +29,6 @@ const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast })
   const [version, setVersion] = useState('0');
   const [orgTrader, setOrgTrader] = useState('KAKKAR, VANSH [kakkarvan]');
   const [status, setStatus] = useState('New');
-  const [messages, setMessages] = useState('');
   const [destination, setDestination] = useState('SMO');
   const [tradeReferences, setTradeReferences] = useState('');
   const [mirrorThis, setMirrorThis] = useState('No');
@@ -49,8 +50,64 @@ const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast })
   const [strategy, setStrategy] = useState('');
   const [accruedInterestOverwrite, setAccruedInterestOverwrite] = useState('None');
 
+  
+  const { tradeState, hasDataChanged, messages: downMessages, isChangeEnabled, handleDataChange, handleCommit } = useTicketStateMachine(addToast, changeReason, changeComment);
+  
+  
+  useEffect(() => {
+    if (draftDataToLoad && draftDataToLoad.type === 'NTRM') {
+      if (typeof setTradeId !== 'undefined') setTradeId(draftDataToLoad.id);
+      if (typeof setCounterparty !== 'undefined') setCounterparty(draftDataToLoad.cpart);
+      if (typeof setCparty !== 'undefined') setCparty(draftDataToLoad.cpart);
+      if (typeof setSellAmount !== 'undefined') setSellAmount(draftDataToLoad.notional);
+      if (typeof setAmount !== 'undefined') setAmount(draftDataToLoad.notional);
+      if (typeof setNotional !== 'undefined') setNotional(draftDataToLoad.notional);
+      if (typeof setDepositAmount !== 'undefined') setDepositAmount(draftDataToLoad.notional);
+      if (typeof setSellCur !== 'undefined') setSellCur(draftDataToLoad.ccy);
+      if (typeof setCcy !== 'undefined') setCcy(draftDataToLoad.ccy);
+      if (typeof setTradingBook !== 'undefined') setTradingBook(draftDataToLoad.book);
+      if (typeof setValueDate !== 'undefined') setValueDate(draftDataToLoad.valueDate);
+      if (typeof setTrader !== 'undefined') setTrader(draftDataToLoad.trader);
+      
+      // Clear it out
+      if (setDraftDataToLoad) setDraftDataToLoad(null);
+      if (addToast) addToast('Draft loaded successfully', 'info');
+    }
+  }, [draftDataToLoad]);
+
   const handleActionClick = (actionName) => {
-    if (addToast) addToast(`${actionName} action performed on FreeCash Ticket`, 'info');
+    if (actionName === 'Commit') {
+      const tradeData = {
+        id: typeof tradeId !== 'undefined' && tradeId ? tradeId : (typeof subType !== 'undefined' ? subType.substring(0,2).toUpperCase() : 'TR') + '-' + Math.floor(Math.random()*100000),
+        type: 'FREECASH',
+        subType: typeof subType !== 'undefined' ? subType : 'Unknown',
+        cpart: typeof counterparty !== 'undefined' ? counterparty : (typeof cparty !== 'undefined' ? cparty : 'Unknown'),
+        ccy: typeof sellCur !== 'undefined' ? sellCur : (typeof ccy !== 'undefined' ? ccy : 'USD'),
+        notional: Number(typeof sellAmount !== 'undefined' && sellAmount ? sellAmount : (typeof amount !== 'undefined' && amount ? amount : (typeof notional !== 'undefined' && notional ? notional : (typeof depositAmount !== 'undefined' && depositAmount ? depositAmount : 0)))),
+        valueDate: typeof valueDate !== 'undefined' && valueDate ? valueDate : '2026-06-25',
+        book: typeof tradingBook !== 'undefined' ? tradingBook : 'DESK_BOOK',
+        trader: typeof trader !== 'undefined' ? trader : 'KAKKAR, VANSH'
+      };
+      handleCommit(null, tradeData, addTrade, updateTradeStatus);
+    } else if (actionName === 'Save') {
+      const tradeData = {
+        id: typeof tradeId !== 'undefined' && tradeId ? tradeId : (typeof subType !== 'undefined' ? subType.substring(0,2).toUpperCase() : 'TR') + '-' + Math.floor(Math.random()*100000),
+        type: 'FREECASH',
+        subType: typeof subType !== 'undefined' ? subType : 'Unknown',
+        cpart: typeof counterparty !== 'undefined' ? counterparty : (typeof cparty !== 'undefined' ? cparty : 'Unknown'),
+        ccy: typeof sellCur !== 'undefined' ? sellCur : (typeof ccy !== 'undefined' ? ccy : 'USD'),
+        notional: Number(typeof sellAmount !== 'undefined' && sellAmount ? sellAmount : (typeof amount !== 'undefined' && amount ? amount : (typeof notional !== 'undefined' && notional ? notional : (typeof depositAmount !== 'undefined' && depositAmount ? depositAmount : 0)))),
+        valueDate: typeof valueDate !== 'undefined' && valueDate ? valueDate : '2026-06-25',
+        book: typeof tradingBook !== 'undefined' ? tradingBook : 'DESK_BOOK',
+        trader: typeof trader !== 'undefined' ? trader : 'KAKKAR, VANSH'
+      };
+      if (addTrade) {
+        addTrade({ ...tradeData, status: 'Draft' });
+        if (addToast) addToast('Trade saved as draft. Ready to commit.', 'success');
+      }
+    } else {
+      if (addToast) addToast(`${actionName} action performed on FreeCashTicket`, 'info');
+    }
   };
   useTradeOperation(handleActionClick);
 
@@ -93,11 +150,11 @@ const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast })
               <div className="input-row"><label>Trade Type</label><input type="text" value="NTRM" disabled /></div>
               <div className="input-row">
                 <label>Sub Type</label>
-                <select value={subType} onChange={(e) => setSubType(e.target.value)}>
+                <SearchableSelect value={subType} onChange={(e) => setSubType(e.target.value)}>
                   <option value="FreeCash">FreeCash</option>
-                </select>
+                </SearchableSelect>
               </div>
-              <div className="input-row"><label>Trade Id</label><input type="text" value={tradeId} disabled /></div>
+              <div className="input-row"><label>Trade Id</label><input type="text" value={tradeId} onChange={(e) => setTradeId(e.target.value)} /></div>
               <div className="input-row"><label>Version</label><input type="text" value={version} disabled /></div>
               <div className="input-row"><label>Status</label><input type="text" value={status} disabled /></div>
               <div className="input-row"><label>Destination</label><input type="text" value={destination} disabled /></div>
@@ -107,21 +164,21 @@ const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast })
             <div className="core-column">
               <div className="input-row">
                 <label>Company</label>
-                <select value={company} onChange={(e) => setCompany(e.target.value)}><option value=""></option></select>
+                <SearchableSelect value={company} onChange={(e) => setCompany(e.target.value)}><option value=""></option></SearchableSelect>
               </div>
               
               <div className="input-row">
                 <label>Trading Book</label>
-                <select value={tradingBook} onChange={(e) => setTradingBook(e.target.value)}><option value=""></option></select>
+                <SearchableSelect value={tradingBook} onChange={(e) => setTradingBook(e.target.value)}><option value=""></option></SearchableSelect>
               </div>
-              <div className="input-row"><label>Messages</label><input type="text" value={messages} onChange={(e) => setMessages(e.target.value)} /></div>
+              <div className="input-row"><label>Messages</label><input type="text" value={downMessages} disabled style={{opacity: 0.8}} /></div>
             </div>
 
             {/* Column 3 */}
             <div className="core-column">
               <div className="input-row">
                 <label>Counterparty</label>
-                <select value={counterparty} onChange={(e) => setCounterparty(e.target.value)}><option value=""></option></select>
+                <SearchableSelect value={counterparty} onChange={(e) => setCounterparty(e.target.value)}><option value=""></option></SearchableSelect>
               </div>
               <div className="input-row"><label>Trade Date</label><input type="date" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} /></div>
               <div className="input-row"><label>Trader</label><input type="text" value={trader} onChange={(e) => setTrader(e.target.value)} /></div>
@@ -186,15 +243,15 @@ const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast })
               </button>
             </div>
 
-            <select value={ntrmReg} onChange={(e) => setNtrmReg(e.target.value)}>
+            <SearchableSelect value={ntrmReg} onChange={(e) => setNtrmReg(e.target.value)}>
               <option value="ACACashCollUP">ACACashCollUP</option>
-            </select>
-            <select value={ccy} onChange={(e) => setCcy(e.target.value)}><option value=""></option></select>
+            </SearchableSelect>
+            <SearchableSelect value={ccy} onChange={handleDataChange(setCcy)}><option value=""></option></SearchableSelect>
             <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
             
             <div style={{display: 'flex', gap: '5px', alignItems: 'center'}}>
               <label className="custom-checkbox"><input type="checkbox" /><div className="checkbox-box"></div></label>
-              <input type="date" value={valueDate} onChange={(e) => setValueDate(e.target.value)} style={{width: '100%'}}/>
+              <input type="date" value={valueDate} onChange={handleDataChange(setValueDate)} style={{width: '100%'}}/>
             </div>
             
             <div className="empty-cell"></div>
@@ -205,20 +262,20 @@ const FreeCashTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast })
         <div className="form-section glass comments-section">
           <div className="core-identification-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="core-column">
-              <div className="input-row"><label>ChangeOwner</label><select value={changeOwner} onChange={(e) => setChangeOwner(e.target.value)}><option value=""></option></select></div>
-              <div className="input-row"><label>ChangeComment</label><input type="text" value={changeComment} onChange={(e) => setChangeComment(e.target.value)} /></div>
+              <div className="input-row"><label>ChangeOwner</label><SearchableSelect value={changeOwner} onChange={(e) => setChangeOwner(e.target.value)} disabled={!isChangeEnabled} style={{ opacity: isChangeEnabled ? 1 : 0.5 }}><option value=""></option></SearchableSelect></div>
+              <div className="input-row"><label>ChangeComment</label><input type="text" value={changeComment} onChange={(e) => setChangeComment(e.target.value)} disabled={!isChangeEnabled} style={{ opacity: isChangeEnabled ? 1 : 0.5 }} /></div>
               <div className="input-row"><label>Comment</label><input type="text" value={comment} onChange={(e) => setComment(e.target.value)} /></div>
               <div className="input-row"><label>Settlement Comment</label><input type="text" value={settlementComment} onChange={(e) => setSettlementComment(e.target.value)} /></div>
-              <div className="input-row"><label>Holidays</label><select value={holidays} onChange={(e) => setHolidays(e.target.value)}><option value="None">None</option></select></div>
+              <div className="input-row"><label>Holidays</label><SearchableSelect value={holidays} onChange={(e) => setHolidays(e.target.value)}><option value="None">None</option></SearchableSelect></div>
             </div>
             
             <div className="core-column">
-              <div className="input-row"><label>ChangeReason</label><input type="text" value={changeReason} onChange={(e) => setChangeReason(e.target.value)} /></div>
+              <div className="input-row"><label>ChangeReason</label><input type="text" value={changeReason} onChange={(e) => setChangeReason(e.target.value)} disabled={!isChangeEnabled} style={{ opacity: isChangeEnabled ? 1 : 0.5 }} /></div>
               <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
               <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
               <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
               <div className="input-row"><label>Strategy</label><input type="text" value={strategy} onChange={(e) => setStrategy(e.target.value)} /></div>
-              <div className="input-row extra-wide-label"><label>Accrued Interest Overwrite</label><select value={accruedInterestOverwrite} onChange={(e) => setAccruedInterestOverwrite(e.target.value)}><option value="None">None</option></select></div>
+              <div className="input-row extra-wide-label"><label>Accrued Interest Overwrite</label><SearchableSelect value={accruedInterestOverwrite} onChange={(e) => setAccruedInterestOverwrite(e.target.value)}><option value="None">None</option></SearchableSelect></div>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Check, 
   Save as SaveIcon, 
@@ -11,9 +11,11 @@ import {
   Coins
 } from 'lucide-react';
 import useTradeOperation from '../../utils/useTradeOperation';
+import useTicketStateMachine from '../../utils/useTicketStateMachine';
+import SearchableSelect from '../SearchableSelect/SearchableSelect';
 import './FXOutrightTicket.css';
 
-const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast }) => {
+const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast, addTrade, updateTradeStatus, draftDataToLoad, setDraftDataToLoad }) => {
   // Core config fields
   const [subType, setSubType] = useState('Outright');
   const [company, setCompany] = useState('Bank A');
@@ -26,7 +28,6 @@ const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast 
   const [version, setVersion] = useState('0');
   const [orgTrader, setOrgTrader] = useState('KAKKAR, VANSH [kakkarvan]');
   const [status, setStatus] = useState('New');
-  const [messages, setMessages] = useState('');
   const [destination, setDestination] = useState('');
   const [tradeReferences, setTradeReferences] = useState('');
   const [mirrorThis, setMirrorThis] = useState('No');
@@ -54,8 +55,64 @@ const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast 
   const [strategy, setStrategy] = useState('');
   const [accruedInterestOverwrite, setAccruedInterestOverwrite] = useState('None');
 
+  
+  const { tradeState, hasDataChanged, messages: downMessages, isChangeEnabled, handleDataChange, handleCommit } = useTicketStateMachine(addToast, changeReason, changeComment);
+  
+  
+  useEffect(() => {
+    if (draftDataToLoad && draftDataToLoad.type === 'FXOUTRIGHT') {
+      if (typeof setTradeId !== 'undefined') setTradeId(draftDataToLoad.id);
+      if (typeof setCounterparty !== 'undefined') setCounterparty(draftDataToLoad.cpart);
+      if (typeof setCparty !== 'undefined') setCparty(draftDataToLoad.cpart);
+      if (typeof setSellAmount !== 'undefined') setSellAmount(draftDataToLoad.notional);
+      if (typeof setAmount !== 'undefined') setAmount(draftDataToLoad.notional);
+      if (typeof setNotional !== 'undefined') setNotional(draftDataToLoad.notional);
+      if (typeof setDepositAmount !== 'undefined') setDepositAmount(draftDataToLoad.notional);
+      if (typeof setSellCur !== 'undefined') setSellCur(draftDataToLoad.ccy);
+      if (typeof setCcy !== 'undefined') setCcy(draftDataToLoad.ccy);
+      if (typeof setTradingBook !== 'undefined') setTradingBook(draftDataToLoad.book);
+      if (typeof setValueDate !== 'undefined') setValueDate(draftDataToLoad.valueDate);
+      if (typeof setTrader !== 'undefined') setTrader(draftDataToLoad.trader);
+      
+      // Clear it out
+      if (setDraftDataToLoad) setDraftDataToLoad(null);
+      if (addToast) addToast('Draft loaded successfully', 'info');
+    }
+  }, [draftDataToLoad]);
+
   const handleActionClick = (actionName) => {
-    if (addToast) addToast(`${actionName} action performed on FXOutright Ticket`, 'info');
+    if (actionName === 'Commit') {
+      const tradeData = {
+        id: typeof tradeId !== 'undefined' && tradeId ? tradeId : (typeof subType !== 'undefined' ? subType.substring(0,2).toUpperCase() : 'TR') + '-' + Math.floor(Math.random()*100000),
+        type: 'FXOUTRIGHT',
+        subType: typeof subType !== 'undefined' ? subType : 'Unknown',
+        cpart: typeof counterparty !== 'undefined' ? counterparty : (typeof cparty !== 'undefined' ? cparty : 'Unknown'),
+        ccy: typeof sellCur !== 'undefined' ? sellCur : (typeof ccy !== 'undefined' ? ccy : 'USD'),
+        notional: Number(typeof sellAmount !== 'undefined' && sellAmount ? sellAmount : (typeof amount !== 'undefined' && amount ? amount : (typeof notional !== 'undefined' && notional ? notional : (typeof depositAmount !== 'undefined' && depositAmount ? depositAmount : 0)))),
+        valueDate: typeof valueDate !== 'undefined' && valueDate ? valueDate : '2026-06-25',
+        book: typeof tradingBook !== 'undefined' ? tradingBook : 'DESK_BOOK',
+        trader: typeof trader !== 'undefined' ? trader : 'KAKKAR, VANSH'
+      };
+      handleCommit(null, tradeData, addTrade, updateTradeStatus);
+    } else if (actionName === 'Save') {
+      const tradeData = {
+        id: typeof tradeId !== 'undefined' && tradeId ? tradeId : (typeof subType !== 'undefined' ? subType.substring(0,2).toUpperCase() : 'TR') + '-' + Math.floor(Math.random()*100000),
+        type: 'FXOUTRIGHT',
+        subType: typeof subType !== 'undefined' ? subType : 'Unknown',
+        cpart: typeof counterparty !== 'undefined' ? counterparty : (typeof cparty !== 'undefined' ? cparty : 'Unknown'),
+        ccy: typeof sellCur !== 'undefined' ? sellCur : (typeof ccy !== 'undefined' ? ccy : 'USD'),
+        notional: Number(typeof sellAmount !== 'undefined' && sellAmount ? sellAmount : (typeof amount !== 'undefined' && amount ? amount : (typeof notional !== 'undefined' && notional ? notional : (typeof depositAmount !== 'undefined' && depositAmount ? depositAmount : 0)))),
+        valueDate: typeof valueDate !== 'undefined' && valueDate ? valueDate : '2026-06-25',
+        book: typeof tradingBook !== 'undefined' ? tradingBook : 'DESK_BOOK',
+        trader: typeof trader !== 'undefined' ? trader : 'KAKKAR, VANSH'
+      };
+      if (addTrade) {
+        addTrade({ ...tradeData, status: 'Draft' });
+        if (addToast) addToast('Trade saved as draft. Ready to commit.', 'success');
+      }
+    } else {
+      if (addToast) addToast(`${actionName} action performed on FXOutrightTicket`, 'info');
+    }
   };
   useTradeOperation(handleActionClick);
 
@@ -98,13 +155,13 @@ const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast 
               <div className="input-row"><label>Trade Type</label><input type="text" value="FX" disabled /></div>
               <div className="input-row">
                 <label>Sub Type</label>
-                <select value={subType} onChange={(e) => setSubType(e.target.value)}>
+                <SearchableSelect value={subType} onChange={(e) => setSubType(e.target.value)}>
                   <option value="Outright">Outright</option>
                   <option value="Spot">Spot</option>
                   <option value="Forward">Forward</option>
-                </select>
+                </SearchableSelect>
               </div>
-              <div className="input-row"><label>Trade Id</label><input type="text" value={tradeId} disabled /></div>
+              <div className="input-row"><label>Trade Id</label><input type="text" value={tradeId} onChange={(e) => setTradeId(e.target.value)} /></div>
               <div className="input-row"><label>Version</label><input type="text" value={version} disabled /></div>
               <div className="input-row"><label>Status</label><input type="text" value={status} disabled /></div>
               <div className="input-row"><label>Destination</label><input type="text" value={destination} disabled /></div>
@@ -114,30 +171,30 @@ const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast 
             <div className="core-column">
               <div className="input-row">
                 <label>Company</label>
-                <select value={company} onChange={(e) => setCompany(e.target.value)}>
+                <SearchableSelect value={company} onChange={(e) => setCompany(e.target.value)}>
                   <option value="Bank A">Bank A</option>
                   <option value="Bank B">Bank B</option>
-                </select>
+                </SearchableSelect>
               </div>
               
               <div className="input-row">
                 <label>Trading Book</label>
-                <select value={tradingBook} onChange={(e) => setTradingBook(e.target.value)}>
+                <SearchableSelect value={tradingBook} onChange={(e) => setTradingBook(e.target.value)}>
                   <option value="FX_BOOK_1">FX_BOOK_1</option>
                   <option value="FX_BOOK_2">FX_BOOK_2</option>
-                </select>
+                </SearchableSelect>
               </div>
-              <div className="input-row"><label>Messages</label><input type="text" value={messages} onChange={(e) => setMessages(e.target.value)} /></div>
+              <div className="input-row"><label>Messages</label><input type="text" value={downMessages} disabled style={{opacity: 0.8}} /></div>
             </div>
 
             {/* Column 3 */}
             <div className="core-column">
               <div className="input-row">
                 <label>Counterparty</label>
-                <select value={counterparty} onChange={(e) => setCounterparty(e.target.value)}>
+                <SearchableSelect value={counterparty} onChange={(e) => setCounterparty(e.target.value)}>
                   <option value="Client X">Client X</option>
                   <option value="Client Y">Client Y</option>
-                </select>
+                </SearchableSelect>
               </div>
               <div className="input-row"><label>Trade Date</label><input type="date" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} /></div>
               <div className="input-row"><label>Trader</label><input type="text" value={trader} onChange={(e) => setTrader(e.target.value)} /></div>
@@ -179,22 +236,22 @@ const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast 
             <div className="param-table-header">Value Date</div>
 
             <div className="param-row-label">Near</div>
-            <select value={sellCur} onChange={(e) => setSellCur(e.target.value)}>
+            <SearchableSelect value={sellCur} onChange={handleDataChange(setSellCur)}>
               <option value=""></option>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
-            </select>
-            <input type="number" value={sellAmount} onChange={(e) => setSellAmount(e.target.value)} />
-            <input type="text" value={sellFxRate} onChange={(e) => setSellFxRate(e.target.value)} />
-            <select value={buyCur} onChange={(e) => setBuyCur(e.target.value)}>
+            </SearchableSelect>
+            <input type="number" value={sellAmount} onChange={handleDataChange(setSellAmount)} />
+            <input type="text" value={sellFxRate} onChange={handleDataChange(setSellFxRate)} />
+            <SearchableSelect value={buyCur} onChange={handleDataChange(setBuyCur)}>
               <option value=""></option>
               <option value="JPY">JPY</option>
               <option value="GBP">GBP</option>
-            </select>
-            <input type="number" value={buyAmount} onChange={(e) => setBuyAmount(e.target.value)} />
+            </SearchableSelect>
+            <input type="number" value={buyAmount} onChange={handleDataChange(setBuyAmount)} />
             <div style={{display: 'flex', gap: '5px', alignItems: 'center'}}>
               <label className="custom-checkbox"><input type="checkbox" /><div className="checkbox-box"></div></label>
-              <input type="date" value={valueDate} onChange={(e) => setValueDate(e.target.value)} />
+              <input type="date" value={valueDate} onChange={handleDataChange(setValueDate)} />
             </div>
           </div>
 
@@ -205,7 +262,7 @@ const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast 
             </label>
             <div className="input-row" style={{ width: '120px' }}>
               <label>BC</label>
-              <select value={bc} onChange={(e) => setBc(e.target.value)}><option value="Full">Full</option></select>
+              <SearchableSelect value={bc} onChange={(e) => setBc(e.target.value)}><option value="Full">Full</option></SearchableSelect>
             </div>
             <label className="custom-checkbox">
               <input type="checkbox" checked={disableOffMarketChecks} onChange={(e) => setDisableOffMarketChecks(e.target.checked)} />
@@ -218,20 +275,20 @@ const FXOutrightTicket = ({ activeSubTab, mirrorTrades, disableOffMkt, addToast 
         <div className="form-section glass comments-section">
           <div className="core-identification-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="core-column">
-              <div className="input-row"><label>ChangeOwner</label><select value={changeOwner} onChange={(e) => setChangeOwner(e.target.value)}><option value=""></option></select></div>
-              <div className="input-row"><label>ChangeComment</label><input type="text" value={changeComment} onChange={(e) => setChangeComment(e.target.value)} /></div>
+              <div className="input-row"><label>ChangeOwner</label><SearchableSelect value={changeOwner} onChange={(e) => setChangeOwner(e.target.value)} disabled={!isChangeEnabled} style={{ opacity: isChangeEnabled ? 1 : 0.5 }}><option value=""></option></SearchableSelect></div>
+              <div className="input-row"><label>ChangeComment</label><input type="text" value={changeComment} onChange={(e) => setChangeComment(e.target.value)} disabled={!isChangeEnabled} style={{ opacity: isChangeEnabled ? 1 : 0.5 }} /></div>
               <div className="input-row"><label>Comment</label><input type="text" value={comment} onChange={(e) => setComment(e.target.value)} /></div>
               <div className="input-row"><label>Settlement Comment</label><input type="text" value={settlementComment} onChange={(e) => setSettlementComment(e.target.value)} /></div>
-              <div className="input-row"><label>Holidays</label><select value={holidays} onChange={(e) => setHolidays(e.target.value)}><option value="None">None</option></select></div>
+              <div className="input-row"><label>Holidays</label><SearchableSelect value={holidays} onChange={(e) => setHolidays(e.target.value)}><option value="None">None</option></SearchableSelect></div>
             </div>
             
             <div className="core-column">
-              <div className="input-row"><label>ChangeReason</label><input type="text" value={changeReason} onChange={(e) => setChangeReason(e.target.value)} /></div>
+              <div className="input-row"><label>ChangeReason</label><input type="text" value={changeReason} onChange={(e) => setChangeReason(e.target.value)} disabled={!isChangeEnabled} style={{ opacity: isChangeEnabled ? 1 : 0.5 }} /></div>
               <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
               <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
               <div className="input-row empty-cell"><label>Spacer</label><input type="text" /></div>
               <div className="input-row"><label>Strategy</label><input type="text" value={strategy} onChange={(e) => setStrategy(e.target.value)} /></div>
-              <div className="input-row extra-wide-label"><label>Accrued Interest Overwrite</label><select value={accruedInterestOverwrite} onChange={(e) => setAccruedInterestOverwrite(e.target.value)}><option value="None">None</option></select></div>
+              <div className="input-row extra-wide-label"><label>Accrued Interest Overwrite</label><SearchableSelect value={accruedInterestOverwrite} onChange={(e) => setAccruedInterestOverwrite(e.target.value)}><option value="None">None</option></SearchableSelect></div>
             </div>
           </div>
         </div>
